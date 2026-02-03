@@ -50,7 +50,7 @@ function App() {
         })
       });
 
-      const newNode = await response.json();
+      const result = await response.json();
       setIntention('');
       alert('Nodo quantistico creato! Osserva i futuri possibili...');
     } catch (error) {
