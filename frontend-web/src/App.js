@@ -10,7 +10,8 @@ function App() {
 
   // Connessione al server quando l'app si carica
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+  const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const newSocket = io(backendUrl);
     setSocket(newSocket);
 
     // Ascolta eventi dal server
@@ -28,7 +29,7 @@ function App() {
     });
 
     // Carica nodi esistenti
-    fetch('http://localhost:5000/api/nodes')
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nodes`)
       .then(res => res.json())
       .then(data => setNodes(data))
       .catch(err => console.log('Nessun nodo esistente, è normale'));

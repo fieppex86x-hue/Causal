@@ -17,7 +17,15 @@ const io = socketIo(server, {
 });
 
 // 3. Middleware base
-app.use(cors());  // Permetti richieste da altri domini
+app.use(cors({
+  origin: [
+    'https://causalquantum.netlify.app',  // Il tuo frontend
+    'http://localhost:3000'               // Per sviluppo
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));  // Permetti richieste da altri domini
 app.use(express.json());  // Permetti JSON nelle richieste
 
 // 4. Database finto (per iniziare)
