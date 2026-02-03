@@ -10,8 +10,8 @@ function App() {
 
   // Connessione al server quando l'app si carica
   useEffect(() => {
-  const backendUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000';
-  const newSocket = io(backendUrl);
+  const BACKEND_URL = 'https://causal-backend-tj1c.onrender.com';
+  const newSocket = io(BACKEND_URL);
     setSocket(newSocket);
 
     // Ascolta eventi dal server
@@ -29,7 +29,7 @@ function App() {
     });
 
     // Carica nodi esistenti
-    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5000'}/api/nodes`)
+    fetch(`${BACKEND_URL}/api/nodes`)
       .then(res => res.json())
       .then(data => setNodes(data))
       .catch(err => console.log('Nessun nodo esistente, è normale'));
@@ -38,18 +38,89 @@ function App() {
   }, []);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!intention.trim()) return;
+  e.preventDefault();
+  if (!intention.trim()) return;
 
-    try {
-      const response = await fetch('http://localhost:5000/api/nodes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          intention: intention,
-          userId: 1 
-        })
-      });
+  console.log('🔍 Tentativo di creare nodo:', intention);
+
+  try {
+    // URL FISSO - NIENTE localhost!
+    const BACKEND_URL = 'https://causal-backend-tj1c.onrender.com';
+    console.log('🔗 Connessione a:', BACKEND_URL);
+
+    const response = await fetch(`${BACKEND_URL}/api/nodes`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ 
+        intention: intention,
+        userId: 'user_' + Date.now()
+      })
+    });
+
+    console.log('📡 Status:', response.status, response.statusText);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ Errore API:', errorText);
+      alert(`Errore ${response.status}: ${errorText}`);
+      return;
+    }
+
+    const result = await response.json();
+    console.log('✅ Successo!', result);
+
+    // Crea nodo per la visualizzazione
+    const newNode = {
+      id: result.id || Date.now(),
+      intention: result.intention || intention,
+      userId: result.userId || 'user_1',
+      createdAt: result.createdAt || new Date().toISOString(),
+      realityWeight: result.realityWeight || 0.5,
+      branches: result.branches || [
+        {
+          id: 1,
+          description: `Successo inaspettato riguardo: "${intention}"`,
+          probability: 0.3,
+          type: 'positive',
+          color: '#4CAF50'
+        },
+        {
+          id: 2,
+          description: `Sfida che porta a crescita personale`,
+          probability: 0.4,
+          type: 'neutral',
+          color: '#FFC107'
+        },
+        {
+          id: 3,
+          description: `Lezione importante da apprendere`,
+          probability: 0.2,
+          type: 'negative',
+          color: '#F44336'
+        },
+        {
+          id: 4,
+          description: `Svolta imprevista che cambia tutto`,
+          probability: 0.1,
+          type: 'unexpected',
+          color: '#9C27B0'
+        }
+      ]
+    };
+
+    setNodes(prev => [newNode, ...prev]);
+    setIntention('');
+    
+    alert(`⚛️ Nodo quantistico creato!`);
+
+  } catch (error) {
+    console.error('💥 Errore:', error);
+    alert('Errore: ' + error.message);
+  }
+};
 
       const result = await response.json();
       setIntention('');
